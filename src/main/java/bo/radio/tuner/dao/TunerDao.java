@@ -16,13 +16,12 @@ public class TunerDao<T> {
 		daoManager = DaoManager.createDao(connectionSource, t);
 	}
 
-	public void create(T entity) throws SQLException {
+	public void save(T entity) throws SQLException {
 		daoManager.create(entity);
 	}
 
-	public void read(T entity) {
-		// TODO Auto-generated method stub
-
+	public T read(String id) throws SQLException {
+		return daoManager.queryForId(id);
 	}
 
 	public void update(T entity) {
