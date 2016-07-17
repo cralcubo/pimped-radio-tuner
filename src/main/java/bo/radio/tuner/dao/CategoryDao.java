@@ -1,6 +1,7 @@
 package bo.radio.tuner.dao;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import bo.radio.tuner.entities.Category;
@@ -16,6 +17,21 @@ public class CategoryDao extends ManyToManyDao<Category, Station, CategoryStatio
 	public CategoryDao() throws SQLException {
 		super(Category.class, Station.class, CategoryStation.class);
 	}
+	
+	@Override
+	protected List<Station> getMany(Category o) {
+		return o.getStations();
+	}
+	
+	@Override
+	protected BiFunction<Category, Station, CategoryStation> joinFactory() {
+		return (c, s) -> new CategoryStation(s, c);
+	}
+	
+	@Override
+	protected void addMany(Category o, Station m) {
+		o.getStations().add(m);
+	}
 
 	@Override
 	protected String getJoinOneColumnName() {
@@ -30,11 +46,6 @@ public class CategoryDao extends ManyToManyDao<Category, Station, CategoryStatio
 	@Override
 	protected String getOneColumnIdName() {
 		return Category.IDCOLUMN_NAME;
-	}
-
-	@Override
-	protected BiFunction<Category, Station, CategoryStation> instantiateJoin() {
-		return (c, s) -> new CategoryStation(s, c);
 	}
 
 }

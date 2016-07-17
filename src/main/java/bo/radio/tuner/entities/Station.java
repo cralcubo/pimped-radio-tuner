@@ -1,15 +1,14 @@
 package bo.radio.tuner.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "stations")
-public class Station {
-	public static final String IDCOLUMN_NAME = "id";
-	
-	@DatabaseField(columnName = IDCOLUMN_NAME, generatedId = true)
-	private int id;
-	
+public class Station extends TunerEntity {
+
 	@DatabaseField
 	private String stream;
 	@DatabaseField
@@ -18,20 +17,16 @@ public class Station {
 	private float bitRate;
 	@DatabaseField
 	private float sampleRate;
-	
+
+	private List<Category> categories = new ArrayList<>();
+
 	public Station() {
 		// empty for ORM lite
 	}
-	
+
 	public Station(String name, String stream) {
-		this(new Builder(name, stream));
-	}
-	
-	private Station(Builder b) {
-		stream = b.stream;
-		name = b.name;
-		bitRate = b.bitRate;
-		sampleRate = b.sampleRate;
+		this.name = name;
+		this.stream = stream;
 	}
 
 	public String getStream() {
@@ -66,19 +61,19 @@ public class Station {
 		this.name = name;
 	}
 
-	public int getId() {
-		return id;
+	public void setCategories(List<Category> categories) {
+		this.categories = categories;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public List<Category> getCategories() {
+		return categories;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
+		int result = super.hashCode();
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -86,46 +81,22 @@ public class Station {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Station other = (Station) obj;
-		if (id != other.id)
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Station [id=" + id + ", stream=" + stream + ", name=" + name + ", bitRate=" + bitRate + ", sampleRate="
-				+ sampleRate + "]";
-	}
-
-	public static class Builder {
-		private String stream = "";
-		private String name = "";
-		private float bitRate = 0f;
-		private float sampleRate = 0f;
-		
-		public Builder(String name, String stream) {
-			this.name = name;
-			this.stream = stream;
-		}
-		
-		public Builder bitRate(float val) {
-			bitRate = val;
-			return this;
-		}
-		
-		public Builder sampleRate(float val) {
-			sampleRate = val;
-			return this;
-		}
-		
-		public Station build() {
-			return new Station(this);
-		}
+		return "Station [name=" + name + "]";
 	}
 
 }

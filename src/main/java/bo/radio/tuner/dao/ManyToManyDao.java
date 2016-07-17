@@ -31,19 +31,38 @@ public abstract class ManyToManyDao<O, M, J> {
 		this.manyDao = DaoManager.createDao(connectionSource, many);
 		this.joinDao = DaoManager.createDao(connectionSource, join);
 	}
-
-	public O create(O one, List<M> manies) throws SQLException {
+	
+	/* *** CREATE *** */
+	
+	public O create(O one) throws SQLException {
 		O o = oneDao.createIfNotExists(one);
 		
-		for (M m : manies) {
+		for (M m : getMany(one)) {
 			manyDao.createIfNotExists(m);
-			joinDao.createIfNotExists(instantiateJoin().apply(o, m));
+			joinDao.createIfNotExists(joinFactory().apply(o, m));
 		}
 
 		return o;
 	}
 	
-	protected abstract BiFunction<O, M, J> instantiateJoin();
+	protected abstract List<M> getMany(O o);
+	protected abstract BiFunction<O, M, J> joinFactory();
+	
+		
+	
+	/* *** UPDATE *** */
+	
+	public void update(O o) throws SQLException {
+		oneDao.update(o);
+		
+		List<M> newManies = getMany(o);
+		List<M> oldManies = queryMany(o);
+		
+		
+		
+	}
+	
+	/* *** DELETE *** */
 	
 	public void delete(O one) throws SQLException {
 		// Delete references in the join table
@@ -56,27 +75,37 @@ public abstract class ManyToManyDao<O, M, J> {
 		// Delete the object 
 		oneDao.delete(one);
 	}
+	
+	/* *** READ *** */
 
 	public O getById(int id) throws SQLException {
-		return oneDao.queryForId(id);
+		O o = oneDao.queryForId(id);
+		// Get all Many elements 
+		queryMany(o).forEach(m -> addMany(o, m));
+		
+		return o;
 	}
 	
-	public List<O> getAllOnes() throws SQLException {
-		return oneDao.queryForAll();
+	protected abstract void addMany(O o, M m);
+	
+	public List<O> getAll() throws SQLException {
+		List<O> all = oneDao.queryForAll();
+		
+		for(O o : all) {
+			queryMany(o).forEach(m -> addMany(o, m));
+		}
+		
+		return all; 
 	}
-
-	public List<M> getMany(O one) throws SQLException {
-		PreparedQuery<M> getManyQuery = preparedGetManyQuery(joinDao, 
-															getJoinOneColumnName(), 
+	
+	public List<M> queryMany(O one) throws SQLException {
+		PreparedQuery<M> getManyQuery = preparedGetManyQuery(getJoinOneColumnName(),
 															getJoinManyColumnName(), 
-															manyDao,
 															getOneColumnIdName());
 		getManyQuery.setArgumentHolderValue(0, one);
 
 		return manyDao.query(getManyQuery);
 	}
-	
-	
 	
 	protected abstract String getJoinOneColumnName();
 	protected abstract String getJoinManyColumnName();
@@ -85,6 +114,8 @@ public abstract class ManyToManyDao<O, M, J> {
 	public void close() {
 		connectionSource.closeQuietly();
 	}
+	
+	/* *** UTILS *** */
 	
 	/**
 	 * Create a prepared query for a Many to Many relation.
@@ -103,23 +134,33 @@ public abstract class ManyToManyDao<O, M, J> {
 	 * @return
 	 * @throws SQLException
 	 */
-	private PreparedQuery<M> preparedGetManyQuery(Dao<J, Integer> joinDao, String oneColumn, String manyColumn, Dao<M, Integer> targetDao,  String targetIdColumn) throws SQLException {
+	private PreparedQuery<M> preparedGetManyQuery(String oneColumn, String manyColumn, String targetIdColumn) throws SQLException {
 		QueryBuilder<J, Integer> joinTableQuery = joinDao.queryBuilder();
 		joinTableQuery.selectColumns(manyColumn);
 		SelectArg selectArg = new SelectArg();
 		joinTableQuery.where().eq(oneColumn, selectArg);
 		
-		QueryBuilder<M, Integer> targetQuery = targetDao.queryBuilder();
+		QueryBuilder<M, Integer> targetQuery = manyDao.queryBuilder();
 		targetQuery.where().in(targetIdColumn, joinTableQuery);
 		
 		return targetQuery.prepare();
 	}
 	
-	private PreparedQuery<J> prepareGetJoinElementsQuery(String oneColumn) throws SQLException {
+	/**
+	 * Get all the elements from the Join Table.
+	 * 
+	 * Select * From JoinTable where conditionColumn = ?
+	 * 
+	 * @param conditionColumn is the column that will be used to satisfy the where condition.
+	 * @return
+	 * @throws SQLException
+	 */
+	private PreparedQuery<J> prepareGetJoinElementsQuery(String conditionColumn) throws SQLException {
 		QueryBuilder<J, Integer> joinTableQuery = joinDao.queryBuilder();
 		SelectArg selectArg = new SelectArg();
-		joinTableQuery.where().eq(oneColumn, selectArg);
+		joinTableQuery.where().eq(conditionColumn, selectArg);
 		
 		return joinTableQuery.prepare();
 	}
+
 }

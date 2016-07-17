@@ -4,12 +4,9 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "category_station")
-public class CategoryStation {
+public class CategoryStation extends TunerEntity  {
 	public final static String CATEGORYCOL_NAME = "category_id";
 	public final static String STATIONCOL_NAME = "station_id";
-
-	@DatabaseField(generatedId = true)
-	int id;
 
 	@DatabaseField(foreign = true, columnName = STATIONCOL_NAME)
 	Station station;
