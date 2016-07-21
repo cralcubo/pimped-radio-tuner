@@ -19,6 +19,8 @@ public class Station extends TunerEntity {
 	private float bitRate;
 	@DatabaseField
 	private float sampleRate;
+	@DatabaseField
+	private String codec;
 
 	private List<Category> categories = new ArrayList<>();
 
@@ -69,6 +71,14 @@ public class Station extends TunerEntity {
 
 	public List<Category> getCategories() {
 		return categories;
+	}
+	
+	public String getCodec() {
+		return codec;
+	}
+	
+	public void setCodec(String codec) {
+		this.codec = codec;
 	}
 
 	@Override
