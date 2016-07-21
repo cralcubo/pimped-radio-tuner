@@ -15,7 +15,7 @@ import bo.radio.tuner.entities.Category;
 import bo.radio.tuner.entities.Station;
 
 public class StationDaoTest {
-	private static final String DB_URL = "jdbc:h2:src/test/resources:tuner";
+	private static final String DB_URL = "jdbc:h2:src/test/resources/tuner";
 
 	private StationDao dao;
 	private Station testStation;
@@ -81,6 +81,7 @@ public class StationDaoTest {
 		Station station = new Station("anotherStation", "http://another_stream.com");
 
 		station.getCategories().add(testCategory1);
+		testCategory1.getStations().add(station);
 
 		Station stationCreated = dao.create(station);
 

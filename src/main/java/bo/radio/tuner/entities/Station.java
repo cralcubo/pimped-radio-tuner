@@ -9,9 +9,11 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "stations")
 public class Station extends TunerEntity {
 
+	public static final String NAMECOLUMN_NAME = "name";
+	
 	@DatabaseField
 	private String stream;
-	@DatabaseField
+	@DatabaseField(columnName = NAMECOLUMN_NAME)
 	private String name;
 	@DatabaseField
 	private float bitRate;
@@ -96,7 +98,7 @@ public class Station extends TunerEntity {
 
 	@Override
 	public String toString() {
-		return "Station [name=" + name + "]";
+		return "Station [name=" + name + ", id=" + id + "]";
 	}
 
 }

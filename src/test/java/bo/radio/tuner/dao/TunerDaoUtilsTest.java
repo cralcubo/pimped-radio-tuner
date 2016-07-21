@@ -14,7 +14,7 @@ import org.junit.After;
 import org.junit.Test;
 
 public class TunerDaoUtilsTest {
-	private static final String DB_URL = "jdbc:h2:src/test/resources:tuner";
+	private static final String DB_URL = "jdbc:h2:src/test/resources/tuner";
 	
 	
 	@Test

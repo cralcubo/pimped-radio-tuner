@@ -8,14 +8,10 @@ import bo.radio.tuner.entities.Category;
 import bo.radio.tuner.entities.CategoryStation;
 import bo.radio.tuner.entities.Station;
 
-public class CategoryDao extends ManyToManyDao<Category, Station, CategoryStation> {
+public class CategoryDao extends OneToManyDao<Category, Station, CategoryStation> {
 	
-	protected CategoryDao(String dbUrl) throws SQLException {
+	public CategoryDao(String dbUrl) throws SQLException {
 		super(Category.class, Station.class, CategoryStation.class, dbUrl);
-	}
-	
-	public CategoryDao() throws SQLException {
-		super(Category.class, Station.class, CategoryStation.class);
 	}
 	
 	@Override
@@ -46,6 +42,11 @@ public class CategoryDao extends ManyToManyDao<Category, Station, CategoryStatio
 	@Override
 	protected String getOneColumnIdName() {
 		return Category.IDCOLUMN_NAME;
+	}
+	
+	@Override
+	protected String getOneColumnName() {
+		return Category.NAMECOLUMN_NAME;
 	}
 
 }

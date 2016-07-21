@@ -38,4 +38,8 @@ public class TunerEntity {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "TunerEntity [id=" + id + "]";
+	}
 }

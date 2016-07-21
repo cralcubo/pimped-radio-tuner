@@ -1,6 +1,7 @@
 package bo.radio.tuner.dao;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -10,22 +11,17 @@ import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.SelectArg;
+import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
-import bo.radio.tuner.utils.PropertiesLoader;
-
-public abstract class ManyToManyDao<O, M, J> {
+public abstract class OneToManyDao<O, M, J> implements CrudDao<O> {
 	private final ConnectionSource connectionSource;
 
 	private Dao<O, Integer> oneDao;
 	private Dao<M, Integer> manyDao;
 	private Dao<J, Integer> joinDao;
-	
-	protected ManyToManyDao(Class<O> one, Class<M> many, Class<J> join) throws SQLException {
-		this(one, many, join, PropertiesLoader.getProperty("database.url"));
-	}
 
-	protected ManyToManyDao(Class<O> one, Class<M> many, Class<J> join, String databaseUrl) throws SQLException {
+	protected OneToManyDao(Class<O> one, Class<M> many, Class<J> join, String databaseUrl) throws SQLException {
 		connectionSource = new JdbcConnectionSource(databaseUrl);
 		this.oneDao = DaoManager.createDao(connectionSource, one);
 		this.manyDao = DaoManager.createDao(connectionSource, many);
@@ -48,28 +44,35 @@ public abstract class ManyToManyDao<O, M, J> {
 	protected abstract List<M> getMany(O o);
 	protected abstract BiFunction<O, M, J> joinFactory();
 	
-		
-	
 	/* *** UPDATE *** */
 	
 	public void update(O o) throws SQLException {
 		oneDao.update(o);
 		
-		List<M> newManies = getMany(o);
-		List<M> oldManies = queryMany(o);
+		List<M> addElements = findDifference(getMany(o), queryMany(o));
+		List<M> removeElements = findDifference(queryMany(o), getMany(o));
 		
+		// Add new elements
+		for(M m : addElements) {
+			manyDao.createIfNotExists(m);
+			joinDao.createIfNotExists(joinFactory().apply(o, m));
+		}
+		// Remove old elements
+		QueryBuilder<J, Integer> joinTableQuery = joinDao.queryBuilder();
 		
-		
+		for(M m : removeElements) {
+			Where<J, Integer> qb = joinTableQuery.where().eq(getJoinOneColumnName(), o).and().eq(getJoinManyColumnName(), m);
+			for(J j : qb.query()) {
+				joinDao.delete(j);
+			}
+		}
 	}
 	
 	/* *** DELETE *** */
 	
 	public void delete(O one) throws SQLException {
 		// Delete references in the join table
-		PreparedQuery<J> joinElementsQuery = prepareGetJoinElementsQuery(getJoinOneColumnName());
-		joinElementsQuery.setArgumentHolderValue(0, one);
-		
-		for(J j : joinDao.query(joinElementsQuery)) {
+		for(J j : joinDao.queryForEq(getJoinOneColumnName(), one)) {
 			joinDao.delete(j);
 		}
 		// Delete the object 
@@ -77,6 +80,10 @@ public abstract class ManyToManyDao<O, M, J> {
 	}
 	
 	/* *** READ *** */
+	
+	public List<O> getByName(String name) throws SQLException {
+		return getByColumn(getOneColumnName(), name);
+	}
 
 	public O getById(int id) throws SQLException {
 		O o = oneDao.queryForId(id);
@@ -84,6 +91,10 @@ public abstract class ManyToManyDao<O, M, J> {
 		queryMany(o).forEach(m -> addMany(o, m));
 		
 		return o;
+	}
+	
+	protected List<O> getByColumn(String columnName, Object value) throws SQLException {
+		  return oneDao.queryForEq(columnName, value);
 	}
 	
 	protected abstract void addMany(O o, M m);
@@ -110,6 +121,7 @@ public abstract class ManyToManyDao<O, M, J> {
 	protected abstract String getJoinOneColumnName();
 	protected abstract String getJoinManyColumnName();
 	protected abstract String getOneColumnIdName();
+	protected abstract String getOneColumnName();
 
 	public void close() {
 		connectionSource.closeQuietly();
@@ -126,10 +138,8 @@ public abstract class ManyToManyDao<O, M, J> {
 	 * The Target table is the one that finally will be queried
 	 * to get a list of the elements needed.
 	 * 
-	 * @param joinDao is the DAO of the Join table.
 	 * @param oneColumn is the name of the column in the Join table from which Many elements can be queried.
 	 * @param manyColumn is the name of the column in the Join table that contains the ID's of the Many elements to be queried.
-	 * @param targetDao is the Target table that will return the list of elements queried.
 	 * @param targetIdColumn is the ID of the Target table.
 	 * @return
 	 * @throws SQLException
@@ -146,21 +156,10 @@ public abstract class ManyToManyDao<O, M, J> {
 		return targetQuery.prepare();
 	}
 	
-	/**
-	 * Get all the elements from the Join Table.
-	 * 
-	 * Select * From JoinTable where conditionColumn = ?
-	 * 
-	 * @param conditionColumn is the column that will be used to satisfy the where condition.
-	 * @return
-	 * @throws SQLException
-	 */
-	private PreparedQuery<J> prepareGetJoinElementsQuery(String conditionColumn) throws SQLException {
-		QueryBuilder<J, Integer> joinTableQuery = joinDao.queryBuilder();
-		SelectArg selectArg = new SelectArg();
-		joinTableQuery.where().eq(conditionColumn, selectArg);
-		
-		return joinTableQuery.prepare();
+	private List<M> findDifference(List<M> originalList, List<M> newList) {
+		List<M> diff = new ArrayList<>(originalList);
+		diff.removeAll(newList);
+		return diff;
 	}
 
 }

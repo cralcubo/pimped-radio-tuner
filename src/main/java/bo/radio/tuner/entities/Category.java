@@ -8,7 +8,9 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "categories")
 public class Category extends TunerEntity {
-	@DatabaseField
+	public static final String NAMECOLUMN_NAME = "name";
+
+	@DatabaseField(columnName=NAMECOLUMN_NAME)
 	private String name;
 	
 	private List<Station> stations = new ArrayList<>();
@@ -64,7 +66,7 @@ public class Category extends TunerEntity {
 
 	@Override
 	public String toString() {
-		return "Category [name=" + name + ", stations=" + stations + "]";
+		return "Category [name=" + name + ", stations=" + stations + ", id=" + id + "]";
 	}
 	
 }
