@@ -13,7 +13,7 @@ public interface CrudDao<T> extends AutoCloseable {
 	
 	T getById(int id) throws SQLException;
 	
-	List<T> getByName(String name) throws SQLException;
+	List<T> getEntitiesByColumn(String columnName, Object entityValue) throws SQLException;
 	
 	List<T> getAll() throws SQLException;
 	

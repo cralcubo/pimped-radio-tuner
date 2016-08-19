@@ -34,7 +34,7 @@ public abstract class OneToManyDao<O, M, J> implements CrudDao<O> {
 		O o = oneDao.createIfNotExists(one);
 		
 		for (M m : getMany(one)) {
-			manyDao.createIfNotExists(m);
+			m = manyDao.createIfNotExists(m);
 			joinDao.createIfNotExists(joinFactory().apply(o, m));
 		}
 
@@ -81,10 +81,6 @@ public abstract class OneToManyDao<O, M, J> implements CrudDao<O> {
 	
 	/* *** READ *** */
 	
-	public List<O> getByName(String name) throws SQLException {
-		return getByColumn(getOneColumnName(), name);
-	}
-
 	public O getById(int id) throws SQLException {
 		O o = oneDao.queryForId(id);
 		// Get all Many elements 
@@ -93,8 +89,13 @@ public abstract class OneToManyDao<O, M, J> implements CrudDao<O> {
 		return o;
 	}
 	
-	protected List<O> getByColumn(String columnName, Object value) throws SQLException {
-		  return oneDao.queryForEq(columnName, value);
+	public List<O> getEntitiesByColumn(String columnName, Object value) throws SQLException {
+		List<O> ones = oneDao.queryForEq(columnName, value);
+		for (O o : ones) {
+			queryMany(o).forEach(m -> addMany(o, m));
+		}
+
+		return ones;
 	}
 	
 	protected abstract void addMany(O o, M m);

@@ -85,12 +85,29 @@ public class CategoryDaoTest {
 		List<Category> categories = dao.getAll();
 		assertThat(categories, is(empty()));
 	}
+	
+	@Test
+	public void testGetAllCategories() throws SQLException {
+		for(Category c : dao.getAll()) {
+			assertThat(c, is(equalTo(testCategory)));
+			assertThat(c.getStations(), containsInAnyOrder(testStation1, testStation2));
+		}
+	}
 
 	@Test
 	public void testGetAllStations() throws SQLException {
 		List<Station> stations = dao.queryMany(testCategory);
 		// Assert
 		assertThat(stations, containsInAnyOrder(testStation1, testStation2));
+	}
+	
+	@Test
+	public void testGetStationsByName() throws SQLException {
+		List<Category> categories = dao.getEntitiesByColumn(Station.NAMECOLUMN_NAME, testCategory.getName());
+		// Assert
+		assertThat(categories.size(), is(1));
+		assertThat(categories.get(0), is(equalTo(testCategory)));
+		assertThat(categories.get(0).getStations(), containsInAnyOrder(testStation1, testStation2));
 	}
 
 	@After

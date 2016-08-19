@@ -10,8 +10,9 @@ import com.j256.ormlite.table.DatabaseTable;
 public class Station extends TunerEntity {
 
 	public static final String NAMECOLUMN_NAME = "name";
+	public static final String STREAMCOLUMN_NAME = "stream";
 	
-	@DatabaseField
+	@DatabaseField(columnName = STREAMCOLUMN_NAME)
 	private String stream;
 	@DatabaseField(columnName = NAMECOLUMN_NAME)
 	private String name;
@@ -80,32 +81,7 @@ public class Station extends TunerEntity {
 	public void setCodec(String codec) {
 		this.codec = codec;
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Station other = (Station) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
-	}
-
+	
 	@Override
 	public String toString() {
 		return "Station [name=" + name + ", id=" + id + "]";

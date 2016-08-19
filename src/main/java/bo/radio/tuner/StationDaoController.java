@@ -1,11 +1,12 @@
 package bo.radio.tuner;
 
 import java.util.List;
+import java.util.Optional;
 
 import bo.radio.tuner.entities.Station;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public interface StationController {
+public interface StationDaoController {
 	
 	Station saveStation(Station station) throws TunerPersistenceException;
 	
@@ -13,8 +14,12 @@ public interface StationController {
 	
 	void removeStation(Station station) throws TunerPersistenceException;
 	
-	Station getStation(int id) throws TunerPersistenceException;
+	Optional<Station> getStationById(int id) throws TunerPersistenceException;
+	
+	Optional<Station> findStation(Station station) throws TunerPersistenceException;
 	
 	List<Station> getAllStations() throws TunerPersistenceException;
+
+	Optional<Station> findStationByName(String name) throws TunerPersistenceException;
 
 }

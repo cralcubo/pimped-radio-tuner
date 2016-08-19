@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bo.radio.tuner.dao.CrudDao;
+import bo.radio.tuner.utils.DaoSupplier;
 import bo.radio.tuner.utils.LogUtils;
 
 public abstract class AbstractCrudBusiness<T> {
@@ -19,13 +20,22 @@ public abstract class AbstractCrudBusiness<T> {
 	protected AbstractCrudBusiness(String databaseUrl) {
 		this.databaseUrl = databaseUrl;
 	}
-
-	protected T create(T t, String entityName) throws SQLException {
+	
+	/**
+	 * Save an entity in the databases, only if that entity
+	 * does not exist yet.
+	 * 
+	 * @param t entity to save.
+	 * @param queryEntities supply a list with a search of all entities that match the entity that will be saved. 
+	 * @return the saved entity.
+	 * @throws SQLException
+	 */
+	protected T create(T t, DaoSupplier<List<T>> queryEntities) throws SQLException {
+		LogUtils.logDebug(log, () -> "Checking if there are already created entities");
+		List<T> entities = queryEntities.get();
+		LogUtils.logDebug(log, () -> String.format("Entities found [%s]", entities));
+		
 		try (CrudDao<T> dao = createDao()) {
-			LogUtils.logDebug(log, () -> String.format("Checking if there are more entities with name [%s]", entityName));
-			List<T> entities = dao.getByName(entityName);
-			LogUtils.logDebug(log, () -> String.format("Entities found [%s]", entities));
-
 			if (entities.isEmpty()) {
 				log.info("Creating {}", t);
 				return dao.create(t);
@@ -37,9 +47,7 @@ public abstract class AbstractCrudBusiness<T> {
 				return e;
 			}
 
-			throw new RuntimeException(String.format(
-					"Something totally unexpected happend. Entities with the name [%s] found were [%d], when Entities with the same name are not allowed.",
-					entityName, entities.size()));
+			throw new RuntimeException("Something totally unexpected happend. More than one entity found.");
 		}
 	}
 
@@ -60,11 +68,26 @@ public abstract class AbstractCrudBusiness<T> {
 			return dao.getById(id);
 		}
 	}
+	
+	protected T getByName(String name) throws SQLException {
+		try (CrudDao<T> dao = createDao()) {
+			List<T> entities = dao.getEntitiesByColumn(getNameColumn(), name);
+			if(entities.isEmpty()) {
+				return null;
+			}
+			if(entities.size() > 1) {
+				throw new RuntimeException("Something totally unexpected happend. More than one entity found.");
+			}
+			return entities.get(0);
+		}
+	}
 
 	protected List<T> getAll() throws SQLException {
 		try (CrudDao<T> dao = createDao()) {
 			return dao.getAll();
 		}
 	}
+	
+	protected abstract String getNameColumn();
 
 }

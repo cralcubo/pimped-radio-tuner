@@ -7,17 +7,17 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 
-import bo.radio.tuner.CategoryController;
-import bo.radio.tuner.StationController;
-import bo.radio.tuner.TunerController;
+import bo.radio.tuner.CategoryDaoController;
+import bo.radio.tuner.StationDaoController;
+import bo.radio.tuner.TunerDaoController;
 import bo.radio.tuner.dao.TunerDaoUtils;
 
 public class TunerBusinessTest {
 	private final static String DATABASEPROP_PATH = "src/test/resources/database.properties";
 	private String dbUrl;
 	
-	protected CategoryController catController;
-	protected StationController stationController;
+	protected CategoryDaoController catController;
+	protected StationDaoController stationController;
 	
 	
 	@Before
@@ -27,7 +27,7 @@ public class TunerBusinessTest {
 			databaseProperties.load(fis);
 		}
 		dbUrl = databaseProperties.getProperty("database.url");
-		TunerController tc = new TunerBusiness(databaseProperties);
+		TunerDaoController tc = new TunerBusiness(databaseProperties);
 		tc.init();
 		
 		catController = tc.getCategoryControllerInstance();

@@ -1,11 +1,12 @@
 package bo.radio.tuner;
 
 import java.util.List;
+import java.util.Optional;
 
 import bo.radio.tuner.entities.Category;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public interface CategoryController {
+public interface CategoryDaoController {
 	
 	Category createCategory(Category category) throws TunerPersistenceException;
 	
@@ -13,8 +14,10 @@ public interface CategoryController {
 	
 	void deleteCategory(Category category) throws TunerPersistenceException;
 	
-	Category getCategory(int id) throws TunerPersistenceException;
+	Optional<Category> getCategory(int id) throws TunerPersistenceException;
 	
 	List<Category> getAllCategories() throws TunerPersistenceException;
+
+	Optional<Category> findCategoryByName(String name) throws TunerPersistenceException;
 	
 }
