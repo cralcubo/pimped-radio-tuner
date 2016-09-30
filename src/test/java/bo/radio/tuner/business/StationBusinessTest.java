@@ -3,9 +3,13 @@ package bo.radio.tuner.business;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import bo.radio.tuner.entities.Category;
@@ -50,6 +54,79 @@ public class StationBusinessTest extends TunerBusinessTest {
 		assertThat(stationController.getAllStations().isEmpty(), is(true));
 		Category fCat = catController.getCategory(category.getId()).get();
 		assertThat(fCat.getStations().isEmpty(), is(true));
+	}
+	
+	@Test
+	public void testDeleteMultipleStations() throws TunerPersistenceException {
+		int totalStations = 120;
+		
+		Category catGeneral = new Category("General");
+		catGeneral = catController.createCategory(catGeneral);
+
+		Category catRock = new Category("Rock");
+		catRock = catController.createCategory(catRock);
+		
+		// Assert all categories were created
+		assertThat("Two categoris were expected.", catController.getAllCategories(), contains(catGeneral, catRock));
+
+		// Create 100 stations
+		List<Station> stations = new ArrayList<>();
+		for (int i = 1; i <= totalStations; i++) {
+			Station s = new Station("s_" + i, "http://test/" + i);
+			Category c = (i % 2 == 0) ? catGeneral : catRock;
+			s.getCategories().add(c);
+			c.getStations().add(s);
+			
+			// Multiple of 3 stations will be in both categories
+			if(i % 3 == 0) {
+				Category ec = (c == catGeneral) ? catRock : catGeneral;
+				s.getCategories().add(ec);
+				ec.getStations().add(s);
+			}
+			
+			s = stationController.saveStation(s);
+			stations.add(s);
+		}
+		
+		// Assert that all stations were created
+		List<Station> allStations = stationController.getAllStations();
+		assertThat(totalStations + " Stations were expected.", allStations.size(), is(totalStations));
+		Assert.assertEquals("Expected Stations were not saved correctly.", allStations, stations);
+		
+		int toRemove = totalStations / 5;
+		// Remove all the stations which index is multiple of 5
+		for(int i = 1 ; i <= toRemove; i++) {
+			Station s = allStations.get((i * 5) - 1);
+			stationController.removeStation(s);
+		}
+		
+		// Assert that we have 96 stations
+		List<Station> remainingStations = stationController.getAllStations();
+		assertThat((totalStations - toRemove) + " stations were expected.", remainingStations.size(), is(totalStations - toRemove));
+		
+		List<String> forbiddenNames = new ArrayList<>();
+		for(int i = 1 ; i <= toRemove; i ++) {
+			forbiddenNames.add("s_" + (i * 5));
+		}
+		
+		// Assert that the remaining stations does not contain the stations with the forbiddenNames
+		List<Station> forbiddenStations = remainingStations.stream()
+				.filter(s -> forbiddenNames.contains(s.getName()))
+				.collect(Collectors.toList());
+		assertThat("Unexpected stations remain in DB=" + forbiddenStations, forbiddenStations.isEmpty(), is(true));
+		
+		int multipleOf3StationsBefore = totalStations / 3;
+		int multipleOf3StationsAfter = multipleOf3StationsBefore - (multipleOf3StationsBefore / 5);
+		// Assert that categories contain the expected stations
+		// Multiple of 3 stations in total after delete = removed:{15, 30, 45, 60, 75, 90, 105, 120} => 32
+		// catGeneral contains even name stations + multiple of 3 stations that are uneven => 48 stations (stations with s_<multiple of 10> name were removed) + 16 
+		// catRock contains uneven name stations => 48 stations (stations with s_<multiple of 5> name were removed) + 16
+		List<Category> allCats = catController.getAllCategories();
+		assertThat("Two categories were expected.", allCats, contains(catGeneral, catRock));
+		allCats.forEach(c -> {
+			int expectedSize = (totalStations - toRemove + multipleOf3StationsAfter) / 2;
+			assertThat(expectedSize + " stations were expected.", c.getStations().size(), is(expectedSize));
+		});
 	}
 	
 	@Test

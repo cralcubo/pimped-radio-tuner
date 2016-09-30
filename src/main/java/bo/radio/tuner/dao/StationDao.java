@@ -41,6 +41,7 @@ public class StationDao extends OneToManyDao<Station, Category, CategoryStation>
 	
 	@Override
 	protected void addMany(Station o, Category m) {
+		m.getStations().add(o);
 		o.getCategories().add(m);
 	}
 	

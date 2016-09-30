@@ -26,6 +26,7 @@ public class CategoryDao extends OneToManyDao<Category, Station, CategoryStation
 	
 	@Override
 	protected void addMany(Category o, Station m) {
+		m.getCategories().add(o);
 		o.getStations().add(m);
 	}
 
