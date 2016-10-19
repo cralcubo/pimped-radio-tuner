@@ -6,7 +6,7 @@ import java.util.Optional;
 import bo.radio.tuner.entities.Category;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public interface CategoryDaoController {
+public interface CategoryDaoApi {
 	
 	Category createCategory(Category category) throws TunerPersistenceException;
 	

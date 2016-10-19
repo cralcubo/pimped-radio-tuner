@@ -7,14 +7,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bo.radio.tuner.StationDaoController;
+import bo.radio.tuner.StationDaoApi;
 import bo.radio.tuner.dao.CrudDao;
 import bo.radio.tuner.dao.StationDao;
 import bo.radio.tuner.entities.Station;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 import bo.radio.tuner.utils.LogUtils;
 
-public class StationBusiness extends AbstractCrudBusiness<Station> implements StationDaoController {
+public class StationBusiness extends AbstractCrudBusiness<Station> implements StationDaoApi {
 	private final static Logger log = LoggerFactory.getLogger(StationBusiness.class);
 
 	StationBusiness(String databaseUrl) {

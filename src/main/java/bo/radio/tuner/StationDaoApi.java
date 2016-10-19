@@ -6,7 +6,7 @@ import java.util.Optional;
 import bo.radio.tuner.entities.Station;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public interface StationDaoController {
+public interface StationDaoApi {
 	
 	Station saveStation(Station station) throws TunerPersistenceException;
 	

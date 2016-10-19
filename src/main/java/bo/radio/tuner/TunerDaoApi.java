@@ -2,7 +2,7 @@ package bo.radio.tuner;
 
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public interface TunerDaoController {
+public interface TunerDaoApi {
 	/**
 	 * Initialize the database that will store
 	 * stations and categories.
@@ -12,11 +12,11 @@ public interface TunerDaoController {
 	/**
 	 * Instantiate or fetch a StationController
 	 */
-	StationDaoController getStationControllerInstance();
+	StationDaoApi getStationControllerInstance();
 	
 	/**
 	 * Instantiate or fetch a CategoryController 
 	 */
-	CategoryDaoController getCategoryControllerInstance();
+	CategoryDaoApi getCategoryControllerInstance();
 
 }

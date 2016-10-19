@@ -3,18 +3,18 @@ package bo.radio.tuner.business;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import bo.radio.tuner.CategoryDaoController;
-import bo.radio.tuner.StationDaoController;
-import bo.radio.tuner.TunerDaoController;
+import bo.radio.tuner.CategoryDaoApi;
+import bo.radio.tuner.StationDaoApi;
+import bo.radio.tuner.TunerDaoApi;
 import bo.radio.tuner.dao.TunerDaoUtils;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
-public class TunerBusiness implements TunerDaoController {
+public class TunerBusiness implements TunerDaoApi {
 	private static final String DATABASEURL_KEY = "database.url";
 
 	private final String databaseUrl;
-	private static StationDaoController stationController = null;
-	private static CategoryDaoController categoryController = null;
+	private static StationDaoApi stationController = null;
+	private static CategoryDaoApi categoryController = null;
 
 	public TunerBusiness(Properties databaseProperties) {
 		String dbUrl = databaseProperties.getProperty(DATABASEURL_KEY);
@@ -39,7 +39,7 @@ public class TunerBusiness implements TunerDaoController {
 	}
 
 	@Override
-	public StationDaoController getStationControllerInstance() {
+	public StationDaoApi getStationControllerInstance() {
 		if (stationController == null) {
 			stationController = new StationBusiness(databaseUrl);
 		}
@@ -48,7 +48,7 @@ public class TunerBusiness implements TunerDaoController {
 	}
 
 	@Override
-	public CategoryDaoController getCategoryControllerInstance() {
+	public CategoryDaoApi getCategoryControllerInstance() {
 		if (categoryController == null) {
 			categoryController = new CategoryBusiness(databaseUrl);
 		}
