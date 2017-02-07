@@ -3,19 +3,23 @@ package bo.radio.tuner.dao;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import bo.radio.tuner.dao.utils.FileUtils;
 import bo.radio.tuner.entities.Category;
 import bo.radio.tuner.entities.Station;
 
 public class StationDaoTest {
-	private static final String DB_URL = "jdbc:h2:src/test/resources/tuner";
+	private static final String TRASHFOLDER_PATH = "src/test/resources/db";
+	private static final String DB_URL = "jdbc:h2:src/test/resources/db/tuner";
 
 	private StationDao dao;
 	private Station testStation;
@@ -162,6 +166,11 @@ public class StationDaoTest {
 	public void tearDown() throws SQLException {
 		TunerDaoUtils.deleteAllTables(DB_URL);
 		dao.close();
+	}
+	
+	@AfterClass
+	public static void cleanUp() {
+		FileUtils.removeFolderContents(new File(TRASHFOLDER_PATH));
 	}
 
 }

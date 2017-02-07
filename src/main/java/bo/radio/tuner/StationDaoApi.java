@@ -21,5 +21,9 @@ public interface StationDaoApi {
 	List<Station> getAllStations() throws TunerPersistenceException;
 
 	Optional<Station> findStationByName(String name) throws TunerPersistenceException;
+	
+	Optional<Station> getLastPlayedStation() throws TunerPersistenceException;
+	
+	void saveLastPlayedStation(Station station) throws TunerPersistenceException;
 
 }

@@ -1,5 +1,6 @@
 package bo.radio.tuner.dao;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -11,10 +12,14 @@ import java.util.List;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 
+import bo.radio.tuner.dao.utils.FileUtils;
+
 public class TunerDaoUtilsTest {
-	private static final String DB_URL = "jdbc:h2:src/test/resources/tuner";
+	private static final String TRASHFOLDER_PATH = "src/test/resources/db";
+	private static final String DB_URL = "jdbc:h2:src/test/resources/db/tuner";
 	
 	
 	@Test
@@ -39,6 +44,11 @@ public class TunerDaoUtilsTest {
 	@After
 	public void tearDown() throws SQLException {
 		TunerDaoUtils.deleteAllTables(DB_URL);
+	}
+	
+	@AfterClass
+	public static void cleanUp() {
+		FileUtils.removeFolderContents(new File(TRASHFOLDER_PATH));
 	}
 
 }

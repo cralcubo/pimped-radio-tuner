@@ -1,5 +1,7 @@
 package bo.radio.tuner.business;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -13,14 +15,29 @@ import bo.radio.tuner.dao.StationDao;
 import bo.radio.tuner.entities.Station;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 import bo.radio.tuner.utils.LogUtils;
+import bo.radio.tuner.utils.SerializeObjectUtils;
 
 public class StationBusiness extends AbstractCrudBusiness<Station> implements StationDaoApi {
 	private final static Logger log = LoggerFactory.getLogger(StationBusiness.class);
-
-	StationBusiness(String databaseUrl) {
-		super(databaseUrl);
-	}
+	private final SerializeObjectUtils<Station> stationSerializer;
 	
+	private final String serializedStationPath; 
+
+	StationBusiness(String databaseUrl, String serializedStationPath) {
+		super(databaseUrl);
+		this.serializedStationPath = serializedStationPath;
+		File destinationFile = new File(serializedStationPath);
+		if (!destinationFile.exists()) {
+			try {
+				destinationFile.createNewFile();
+			} catch (IOException e) {
+				throw new RuntimeException("There was an error creating the File:" + serializedStationPath
+						+ ". Make sure that there is enough right to create a file in that folder.");
+			}
+		}
+		stationSerializer = new SerializeObjectUtils<>(destinationFile, Station.class);
+	}
+
 	/**
 	 * Save a Station only if the streamUrl is different from the ones already
 	 * saved. 
@@ -113,6 +130,24 @@ public class StationBusiness extends AbstractCrudBusiness<Station> implements St
 	@Override
 	protected String getNameColumn() {
 		return Station.NAMECOLUMN_NAME;
+	}
+
+	@Override
+	public Optional<Station> getLastPlayedStation() throws TunerPersistenceException  {
+		try {
+			return Optional.of(stationSerializer.read());
+		} catch (ClassNotFoundException | IOException e) {
+			throw new TunerPersistenceException("There was an error reading the serialized Station from: " + serializedStationPath, e);
+		}
+	}
+
+	@Override
+	public void saveLastPlayedStation(Station s) throws TunerPersistenceException {
+		try {
+			stationSerializer.write(s);
+		} catch (IOException e) {
+			throw new TunerPersistenceException("There was an error writing the serialized Station to: " + serializedStationPath, e);
+		}
 	}
 
 }

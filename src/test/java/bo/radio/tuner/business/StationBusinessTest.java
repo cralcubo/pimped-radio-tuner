@@ -1,7 +1,10 @@
 package bo.radio.tuner.business;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +20,32 @@ import bo.radio.tuner.entities.Station;
 import bo.radio.tuner.exceptions.TunerPersistenceException;
 
 public class StationBusinessTest extends TunerBusinessTest {
+	
+	@Test
+	public void testSaveReadLastStation() throws TunerPersistenceException {
+		// Write
+		Station station = new Station("Dance Radio", "http://test:8080");
+		stationController.saveLastPlayedStation(station);
+
+		// Read
+		Optional<Station> rStation = stationController.getLastPlayedStation();
+
+		// Assert
+		Assert.assertTrue("A saved station was supposed to be returned.", rStation.isPresent());
+		assertThat(rStation.get(), is(station));
+
+		// Save another station
+		Station newStation = new Station("Radio Paradise", "http://radioparadise.com");
+		newStation.getCategories().add(new Category("Rock"));
+		stationController.saveLastPlayedStation(newStation);
+
+		// Read
+		rStation = stationController.getLastPlayedStation();
+
+		// Assert
+		Assert.assertTrue("A saved station was supposed to be returned.", rStation.isPresent());
+		assertThat(rStation.get(), is(newStation));
+	}
 	
 	@Test
 	public void testSaveStation() throws TunerPersistenceException {

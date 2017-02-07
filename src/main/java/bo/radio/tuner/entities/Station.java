@@ -1,5 +1,6 @@
 package bo.radio.tuner.entities;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +8,9 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "stations")
-public class Station extends TunerEntity {
-
+public class Station extends TunerEntity implements Serializable {
+	private static final long serialVersionUID = 5420799713581070156L;
+	
 	public static final String NAMECOLUMN_NAME = "name";
 	public static final String STREAMCOLUMN_NAME = "stream";
 	
@@ -23,7 +25,7 @@ public class Station extends TunerEntity {
 	@DatabaseField
 	private String codec;
 
-	private List<Category> categories = new ArrayList<>();
+	transient private List<Category> categories = new ArrayList<>();
 
 	public Station() {
 		// empty for ORM lite
