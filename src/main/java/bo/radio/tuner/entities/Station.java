@@ -83,10 +83,10 @@ public class Station extends TunerEntity implements Serializable {
 	public void setCodec(String codec) {
 		this.codec = codec;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Station [name=" + name + ", id=" + id + "]";
+		return "Station [stream=" + stream + ", name=" + name + ", sampleRate=" + sampleRate + "]";
 	}
 
 }
